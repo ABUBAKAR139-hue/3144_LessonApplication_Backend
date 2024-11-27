@@ -5,12 +5,12 @@ const router = express.Router();
 // POST - Create new order
 router.post("/", async (req, res) => {
   try {
-    const { name, phoneNumber, lessonIDs, numberOfSpaces } = req.body; // Ensure correct field names
+    const { name, phoneNumber, lessonIDs, numberOfSpaces } = req.body;
     const newOrder = new Order({
       name,
-      phone: phoneNumber, // Ensure consistency in field names
+      phone: phoneNumber,
       lessonIDs,
-      numberOfSpaces, // Use "numberOfSpaces" from request body
+      numberOfSpaces,
     });
 
     await newOrder.save();

@@ -17,24 +17,24 @@ app.use((req, res, next) => {
   next();
 });
 
+// Routes
+const lessonRoutes = require("./routes/lessonRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+app.use("/lessons", lessonRoutes);
+app.use("/api/orders", orderRoutes);
+
 // Serve Static Files Middleware
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.use((req, res) => {
+
+app.use("/images", (req, res) => {
   res.status(404).send("Image not found");
 });
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI, {})
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error(err));
-
-// Routes
-const lessonRoutes = require("./routes/lessonRoutes");
-app.use("/lessons", lessonRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

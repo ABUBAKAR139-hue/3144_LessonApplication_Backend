@@ -7,12 +7,12 @@ router.get("/", async (req, res) => {
   try {
     const lessons = await Lesson.find();
     const formattedLessons = lessons.map((lesson) => ({
-      id: lesson._id, // Map `_id` to `id`
-      subject: lesson.subject, // Map `subject` to `subject`
+      id: lesson._id,
+      subject: lesson.subject,
       location: lesson.location,
       price: lesson.price,
-      spaces: lesson.spaces, // Map `spaces` to `spaces`
-      image: lesson.image, // Assuming the `image` field is in the schema
+      spaces: lesson.spaces,
+      image: lesson.image,
     }));
     res.json(formattedLessons);
   } catch (err) {
@@ -46,10 +46,10 @@ router.post("/", async (req, res) => {
   const { subject, price, location, spaces, image } = req.body;
 
   const newLesson = new Lesson({
-    subject, // Use 'subject' instead of 'topic'
+    subject,
     price,
     location,
-    spaces, // Use 'spaces' instead of 'space'
+    spaces,
     image,
   });
 
@@ -57,10 +57,10 @@ router.post("/", async (req, res) => {
     const savedLesson = await newLesson.save();
     const formattedLesson = {
       id: savedLesson._id,
-      subject: savedLesson.subject, // Return 'subject' as 'subject'
+      subject: savedLesson.subject,
       location: savedLesson.location,
       price: savedLesson.price,
-      spaces: savedLesson.spaces, // Return 'spaces' as 'spaces'
+      spaces: savedLesson.spaces,
       image: savedLesson.image,
     };
     res.status(201).json(formattedLesson);
