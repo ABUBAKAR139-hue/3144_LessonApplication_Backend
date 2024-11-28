@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 const lessonRoutes = require("./routes/lessonRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 app.use("/lessons", lessonRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/orders", orderRoutes);
 
 // Serve Static Files Middleware
 app.use("/images", express.static(path.join(__dirname, "images")));
@@ -32,9 +32,9 @@ app.use("/images", (req, res) => {
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI, {})
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error(err));
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.error("Connection error:", err));
 
 // Test Route
 app.get("/", (req, res) => {
@@ -43,4 +43,17 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+// Search as you type
+app.get("/search", async (req, res) => {
+  const query = req.query.q;
+  try {
+    const results = await Lesson.find({
+      name: { $regex: query, $options: "i" },
+    });
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
