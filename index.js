@@ -30,30 +30,44 @@ app.use("/images", (req, res) => {
   res.status(404).send("Image not found");
 });
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.error("Connection error:", err));
+// MongoDB connection with increased timeout settings
+const mongoUri = process.env.MONGO_URI;
+console.log("Mongo URI: ", mongoUri);
 
-// Test Route
+mongoose
+  .connect(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  })
+  .then(() => {
+    console.log("MongoDB Connected");
+  })
+  .catch((err) => {
+    console.error("Connection error:", err);
+  });
+
+// Test Route to confirm backend is running
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-// Search as you type
+// Search Route
 app.get("/search", async (req, res) => {
   const query = req.query.q;
   try {
+    // Ensure MongoDB schema has the `name` field
     const results = await Lesson.find({
       name: { $regex: query, $options: "i" },
-    });
+    }).exec();
     res.json(results);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+// Start the Server
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server is running on port ${PORT}`);
 });
