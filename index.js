@@ -7,9 +7,16 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS Configuration
+const corsOptions = {
+  origin: "https://abubakar139-hue.github.io",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 // Middleware
 app.use(express.json());
-app.use(cors());
 
 // Logger Middleware
 app.use((req, res, next) => {
@@ -30,15 +37,12 @@ app.use("/images", (req, res) => {
   res.status(404).send("Image not found");
 });
 
-// MongoDB connection with increased timeout settings
+// MongoDB connection
 const mongoUri = process.env.MONGO_URI;
 console.log("Mongo URI: ", mongoUri);
 
 mongoose
-  .connect(mongoUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(mongoUri, {})
   .then(() => {
     console.log("MongoDB Connected Successfully");
   })
@@ -55,7 +59,6 @@ app.get("/", (req, res) => {
 app.get("/search", async (req, res) => {
   const query = req.query.q;
   try {
-    // Ensure MongoDB schema has the `name` field
     const results = await Lesson.find({
       name: { $regex: query, $options: "i" },
     }).exec();
