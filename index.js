@@ -9,9 +9,10 @@ const PORT = process.env.PORT || 5000;
 
 // CORS Configuration
 const corsOptions = {
-  origin: "https://abubakar139-hue.github.io/3144_LessonApplication_Frontend/",
+  origin: "https://abubakar139-hue.github.io",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
+  allowedHeaders: ["Content-Type"],
 };
 app.use(cors(corsOptions));
 
