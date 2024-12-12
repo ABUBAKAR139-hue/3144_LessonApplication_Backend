@@ -1,17 +1,10 @@
-const mongoose = require("mongoose");
+const { MongoClient } = require("mongodb");
 const dotenv = require("dotenv");
-const Lesson = require("./models/Lesson"); // Path to your Lesson model
 
-dotenv.config(); // Load environment variables
+dotenv.config();
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.error("Connection error:", err));
+// MongoDB connection URI
+const uri = process.env.MONGO_URI;
 
 // Data to Populate
 const lessons = [
@@ -138,22 +131,34 @@ const lessons = [
 
 // Seed the database
 const seedLessons = async () => {
+  const client = new MongoClient(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
   try {
+    // Connect to the database
+    await client.connect();
+    console.log("MongoDB Connected!");
+
+    // Get the lessons collection
+    const db = client.db();
+    const lessonsCollection = db.collection("lessons");
+
     // Clear existing data
-    await Lesson.deleteMany();
+    await lessonsCollection.deleteMany({});
     console.log("Existing lessons cleared!");
 
     // Insert new data
-    await Lesson.insertMany(lessons);
+    await lessonsCollection.insertMany(lessons);
     console.log("Lessons added successfully!");
-
-    // Close the connection
-    mongoose.connection.close();
   } catch (err) {
     console.error("Seeding error:", err);
-    mongoose.connection.close();
+  } finally {
+    // Close the connection
+    await client.close();
+    console.log("MongoDB connection closed.");
   }
 };
 
-// Run the seed function
 seedLessons();

@@ -1,6 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
+const { MongoClient, ObjectId } = require("mongodb");
 const cors = require("cors");
 const path = require("path");
 
@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 // CORS Configuration
 const corsOptions = {
-  origin: "https://abubakar139-hue.github.io",
+  origin: "https://abubakar139-hue.github.io/3144_LessonApplication_Frontend/",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   allowedHeaders: ["Content-Type"],
@@ -25,51 +25,41 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-const lessonRoutes = require("./routes/lessonRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-app.use("/lessons", lessonRoutes);
-app.use("/orders", orderRoutes);
-
-// Serve Static Files Middleware
-app.use("/images", express.static(path.join(__dirname, "images")));
-
-app.use("/images", (req, res) => {
-  res.status(404).send("Image not found");
-});
-
 // MongoDB connection
 const mongoUri = process.env.MONGO_URI;
-console.log("Mongo URI: ", mongoUri);
+const client = new MongoClient(mongoUri);
 
-mongoose
-  .connect(mongoUri, {})
+client
+  .connect()
   .then(() => {
+    const db = client.db(); // Use the default database specified in the URI
     console.log("MongoDB Connected Successfully");
+
+    // Import routes and pass `db`
+    const lessonRoutes = require("./routes/lessonRoutes")(db);
+    const orderRoutes = require("./routes/orderRoutes")(db);
+
+    // Register routes
+    app.use("/lessons", lessonRoutes);
+    app.use("/orders", orderRoutes);
+
+    // Serve Static Files Middleware
+    app.use("/images", express.static(path.join(__dirname, "images")));
+    app.use("/images", (req, res) => {
+      res.status(404).send("Image not found");
+    });
+
+    // Test Route to confirm backend is running
+    app.get("/", (req, res) => {
+      res.send("Backend is running");
+    });
+
+    // Start the Server
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("Connection error:", err);
+    process.exit(1); // Exit the application if the database connection fails
   });
-
-// Test Route to confirm backend is running
-app.get("/", (req, res) => {
-  res.send("Backend is running");
-});
-
-// Search Route
-app.get("/search", async (req, res) => {
-  const query = req.query.q;
-  try {
-    const results = await Lesson.find({
-      name: { $regex: query, $options: "i" },
-    }).exec();
-    res.json(results);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Start the Server
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server is running on port ${PORT}`);
-});
