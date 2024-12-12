@@ -10,7 +10,11 @@ module.exports = (db) => {
   router.post("/", async (req, res) => {
     try {
       const order = req.body;
+      if (order.lessonIDs && Array.isArray(order.lessonIDs)) {
+        order.lessonIDs = order.lessonIDs.map((id) => new ObjectId(id));
+      }
       order.createdAt = new Date();
+      // Insert the order into the database
       const result = await ordersCollection.insertOne(order);
       res.status(201).json({ ...order, _id: result.insertedId });
     } catch (err) {
